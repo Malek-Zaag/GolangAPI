@@ -24,10 +24,40 @@ func getBooks(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, books)
 }
 
+func bookById(c *gin.Context) {
+	id := c.Param("id")
+	book, err := getBookById(id)
+
+	if err != nil {
+		return
+	}
+	c.IndentedJSON(http.StatusOK, book)
+}
+
+func getBookById(id string) (*book, error) {
+	for i, book := range books {
+		if book.ID == id {
+			return &books[i], nil
+		}
+	}
+	return nil, error.New("book not found")
+}
+
+func createBook(c *gin.Context) {
+	var newBook book
+	if err := c.BindJSON(&newBook); err != nil {
+		return
+	}
+	books = append(books, newBook)
+	c.IndentedJSON(http.StatusCreated, newBook)
+}
+
 func main() {
 	fmt.Println("hellow world !!!")
 	fmt.Println("your application is working")
 	router := gin.Default()
 	router.GET("/books", getBooks)
+	router.GET("books/:id")
+	router.POST("/books", createBook)
 	router.Run("localhost:8080")
 }
