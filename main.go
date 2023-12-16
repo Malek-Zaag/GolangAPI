@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -29,7 +30,7 @@ func bookById(c *gin.Context) {
 	book, err := getBookById(id)
 
 	if err != nil {
-		return
+		c.IndentedJSON(http.StatusNotFound, err)
 	}
 	c.IndentedJSON(http.StatusOK, book)
 }
@@ -40,7 +41,7 @@ func getBookById(id string) (*book, error) {
 			return &books[i], nil
 		}
 	}
-	return nil, error.New("book not found")
+	return nil, errors.New("book not found")
 }
 
 func createBook(c *gin.Context) {
@@ -57,7 +58,7 @@ func main() {
 	fmt.Println("your application is working")
 	router := gin.Default()
 	router.GET("/books", getBooks)
-	router.GET("books/:id")
+	router.GET("books/:id", bookById)
 	router.POST("/books", createBook)
 	router.Run("localhost:8080")
 }
