@@ -8,13 +8,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type book struct {
-	ID       string `json:"id"`
-	Title    string `json:"title"`
-	Author   string `json:"author"`
-	Quantity int16  `json:"quantity"`
-}
-
 var books = []book{
 	{ID: "1", Title: "In Search of Lost Time", Author: "Marcel Proust", Quantity: 2},
 	{ID: "2", Title: "The Great Gatsby", Author: "F. Scott Fitzgerald", Quantity: 5},
