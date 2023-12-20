@@ -16,7 +16,6 @@ func loadEnv() {
 }
 
 func loadDatabase() {
-
 	database.Init()
 	database.Database.AutoMigrate(&model.Book{})
 }
