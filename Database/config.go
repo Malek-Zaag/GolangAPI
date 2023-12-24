@@ -23,7 +23,7 @@ func Init() {
 	if err != nil {
 		panic(err)
 	} else {
-		fmt.Println("Successfully connected to the database")
+		fmt.Println("Successfully connected to the database !")
 	}
 
 }
