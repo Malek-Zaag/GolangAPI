@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	database "main/Database"
@@ -30,10 +31,10 @@ func main() {
 	fmt.Println("your application is working")
 	router := gin.Default()
 	router.GET("/books", getBooks)
-	// router.GET("books/:id", bookById)
+	router.GET("books/:id", bookById)
 	router.POST("/books", createBook)
-	// router.PATCH("/checkout", checkoutBook)
-	// router.PATCH("/return", returnBook)
+	router.PATCH("/checkout", checkoutBook)
+	router.PATCH("/return", returnBook)
 	router.Run("localhost:8080")
 }
 
@@ -47,25 +48,33 @@ func getBooks(c *gin.Context) {
 	}
 }
 
-// func bookById(c *gin.Context) {
-// 	id := c.Param("id")
-// 	book, err := getBookById(id)
+func bookById(c *gin.Context) {
+	id := c.Param("id")
+	book, err := getBookById(id)
 
-// 	if err != nil {
-// 		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "Book not found"})
-// 		return
-// 	}
-// 	c.IndentedJSON(http.StatusOK, book)
-// }
+	if err != nil {
+		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "Book not found"})
+		return
+	}
+	c.IndentedJSON(http.StatusOK, book)
+}
 
-// func getBookById(id string) (*book, error) {
-// 	for i, book := range books {
-// 		if book.ID == id {
-// 			return &books[i], nil
-// 		}
-// 	}
-// 	return nil, errors.New("book not found")
-// }
+func getBookById(id string) (*model.Book, error) {
+	db := database.Database
+	books := []model.Book{}
+	if err := db.Find(&books).Error; err != nil {
+		return nil, errors.New("books not found")
+	} else {
+		for i, book := range books {
+			di := fmt.Sprint(book.ID)
+			if di == id {
+				return &books[i], nil
+			}
+		}
+		return nil, errors.New("book not found")
+	}
+
+}
 
 func createBook(c *gin.Context) {
 	newBook := model.Book{}
@@ -77,57 +86,47 @@ func createBook(c *gin.Context) {
 	c.IndentedJSON(http.StatusCreated, newBook)
 }
 
-// func checkoutBook(c *gin.Context) {
-// 	id, ok := c.GetQuery("id")
+func checkoutBook(c *gin.Context) {
+	id, ok := c.GetQuery("id")
 
-// 	if !ok {
-// 		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Missing id query parameter."})
-// 		return
-// 	}
+	if !ok {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Missing id query parameter."})
+		return
+	}
 
-// 	book, err := getBookById(id)
+	book, err := getBookById(id)
 
-// 	if err != nil {
-// 		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "Book not found."})
-// 		return
-// 	}
+	if err != nil {
+		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "Book not found."})
+		return
+	}
 
-// 	if book.Quantity <= 0 {
-// 		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Book not available."})
-// 		return
-// 	}
+	if book.Quantity <= 0 {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Book not available."})
+		return
+	}
 
-// 	book.Quantity -= 1
-// 	c.IndentedJSON(http.StatusOK, book)
-// }
+	book.Quantity -= 1
+	database.Database.Save(&book)
+	c.IndentedJSON(http.StatusOK, book)
+}
 
-// func returnBook(c *gin.Context) {
-// 	id, ok := c.GetQuery("id")
+func returnBook(c *gin.Context) {
+	id, ok := c.GetQuery("id")
 
-// 	if !ok {
-// 		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Missing id query parameter."})
-// 		return
-// 	}
+	if !ok {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Missing id query parameter."})
+		return
+	}
 
-// 	book, err := getBookById(id)
+	book, err := getBookById(id)
 
-// 	if err != nil {
-// 		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "Book not found."})
-// 		return
-// 	}
+	if err != nil {
+		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "Book not found."})
+		return
+	}
 
-// 	book.Quantity += 1
-// 	c.IndentedJSON(http.StatusOK, book)
-// }
-
-// func main() {
-// fmt.Println("hellow world !!!")
-// fmt.Println("your application is working")
-// router := gin.Default()
-// router.GET("/books", getBooks)
-// router.GET("books/:id", bookById)
-// router.POST("/books", createBook)
-// router.PATCH("/checkout", checkoutBook)
-// router.PATCH("/return", returnBook)
-// router.Run("localhost:8080")
-// }
+	book.Quantity += 1
+	database.Database.Save(&book)
+	c.IndentedJSON(http.StatusOK, book)
+}
