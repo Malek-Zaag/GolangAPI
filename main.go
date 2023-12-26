@@ -27,8 +27,6 @@ func loadDatabase() {
 func main() {
 	loadEnv()
 	loadDatabase()
-	fmt.Println("hellow world !!!")
-	fmt.Println("your application is working")
 	router := gin.Default()
 	router.GET("/books", getBooks)
 	router.GET("books/:id", bookById)
