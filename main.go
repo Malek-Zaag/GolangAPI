@@ -1,10 +1,13 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	database "main/Database"
 	model "main/Model"
+	"net/http"
 
+	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
 
@@ -23,17 +26,26 @@ func loadDatabase() {
 func main() {
 	loadEnv()
 	loadDatabase()
+	fmt.Println("hellow world !!!")
+	fmt.Println("your application is working")
+	router := gin.Default()
+	router.GET("/books", getBooks)
+	// router.GET("books/:id", bookById)
+	router.POST("/books", createBook)
+	// router.PATCH("/checkout", checkoutBook)
+	// router.PATCH("/return", returnBook)
+	router.Run("localhost:8080")
 }
 
-// var books = []Book{
-// 	{ID: "1", Title: "In Search of Lost Time", Author: "Marcel Proust", Quantity: 2},
-// 	{ID: "2", Title: "The Great Gatsby", Author: "F. Scott Fitzgerald", Quantity: 5},
-// 	{ID: "3", Title: "War and Peace", Author: "Leo Tolstoy", Quantity: 6},
-// }
-
-// func getBooks(c *gin.Context) {
-// 	c.IndentedJSON(http.StatusOK, books)
-// }
+func getBooks(c *gin.Context) {
+	books := []model.Book{}
+	db := database.Database
+	if err := db.Find(&books).Error; err != nil {
+		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "Books not found"})
+	} else {
+		c.IndentedJSON(http.StatusOK, books)
+	}
+}
 
 // func bookById(c *gin.Context) {
 // 	id := c.Param("id")
@@ -55,14 +67,15 @@ func main() {
 // 	return nil, errors.New("book not found")
 // }
 
-// func createBook(c *gin.Context) {
-// 	var newBook book
-// 	if err := c.BindJSON(&newBook); err != nil {
-// 		return
-// 	}
-// 	books = append(books, newBook)
-// 	c.IndentedJSON(http.StatusCreated, newBook)
-// }
+func createBook(c *gin.Context) {
+	newBook := model.Book{}
+	if err := c.BindJSON(&newBook); err != nil {
+		return
+	}
+	db := database.Database
+	db.Create(&newBook)
+	c.IndentedJSON(http.StatusCreated, newBook)
+}
 
 // func checkoutBook(c *gin.Context) {
 // 	id, ok := c.GetQuery("id")
@@ -108,13 +121,13 @@ func main() {
 // }
 
 // func main() {
-// 	fmt.Println("hellow world !!!")
-// 	fmt.Println("your application is working")
-// 	router := gin.Default()
-// 	router.GET("/books", getBooks)
-// 	router.GET("books/:id", bookById)
-// 	router.POST("/books", createBook)
-// 	router.PATCH("/checkout", checkoutBook)
-// 	router.PATCH("/return", returnBook)
-// 	router.Run("localhost:8080")
+// fmt.Println("hellow world !!!")
+// fmt.Println("your application is working")
+// router := gin.Default()
+// router.GET("/books", getBooks)
+// router.GET("books/:id", bookById)
+// router.POST("/books", createBook)
+// router.PATCH("/checkout", checkoutBook)
+// router.PATCH("/return", returnBook)
+// router.Run("localhost:8080")
 // }
