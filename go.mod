@@ -1,7 +1,8 @@
 module main
 
-go 1.21.5
-toolchain go1.23.7
+go 1.23.0
+
+toolchain go1.24.2
 
 require (
 	github.com/gin-gonic/gin v1.10.0
